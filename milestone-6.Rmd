@@ -34,11 +34,16 @@ getmode <- function(v) {
 ```
 
 
-So far, I've been able to replicate all 7 figures used in my main paper. I am still working on making the spacing and size of the graphs perfect so that they are readable (I ran into this issue with  I am able to produce the content of the 5 tables of the graph but I am running into bugs when I try to visualize them in stargazer or other programs. 
-
+So far, I've been able to replicate all 7 figures used in my main paper. I am still working on making the spacing and size of the graphs perfect so that they are readable (I ran into this issue with Figures 2,4, and 5). I am able to produce the content of the 5 tables of the graph but I am running into bugs when I try to visualize them in stargazer. This is something I will fix for the next milestone.  
 
 ^[[All analysis for this paper is availible at https://github.com/mirobergam/milestone-5](https://github.com/mirobergam/milestone-6)]
+ 
+## Extension Proposal 
 
+I do not yet have an extension proposal.
+
+
+## Appendix 
 ### Figure 1
 
 ```{r}
