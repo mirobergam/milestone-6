@@ -34,11 +34,10 @@ getmode <- function(v) {
 ```
 
 
-Milestone 6
+So far, I've been able to replicate all 7 figures used in my main paper. I am still working on making the spacing and size of the graphs perfect so that they are readable (I ran into this issue with  I am able to produce the content of the 5 tables of the graph but I am running into bugs when I try to visualize them in stargazer or other programs. 
 
-@main_paper @side_paper_1 @side_paper_2 @side_paper_3 @side_paper_4
 
-^[[All analysis for this paper is availible at https://github.com/mirobergam/milestone-5](https://github.com/mirobergam/milestone-5)]
+^[[All analysis for this paper is availible at https://github.com/mirobergam/milestone-5](https://github.com/mirobergam/milestone-6)]
 
 ### Figure 1
 
@@ -188,7 +187,7 @@ correlations <- c(
 )
 correlations <- round(correlations, 3)
 correlation.matrix <- cbind(vars, correlations)
-correlation.matrix
+#correlation.matrix
 
 vars.2 <- c("Ideology (W1/W3)", "Binding (W1/W3)", "Authority (W1/W3)", "Loyalty (W1/W3)", "Purity (W1/W3)",
             "Fairness (W1/W3)", "Harm (W1/W3)", "Individualizing (W1/W3)" )
@@ -204,7 +203,7 @@ correlations.2 <- c(
 )
 correlations.2 <- round(correlations, 3)
 correlation.matrix.2 <- cbind(vars, correlations.2)
-correlation.matrix.2
+#correlation.matrix.2
 
 vars.w3 <- c("Ideology (W2/W3)", "Binding (W2/W3)", "Authority (W2/W3)", "Loyalty (W2/W3)", "Purity (W2/W3)",
              "Fairness (W2/W3)", "Harm (W2/W3)", "Individualizing (W2/W3)" )
@@ -220,7 +219,7 @@ correlations.w3 <- c(
 )
 correlations.w3 <- round(correlations.w3, 3)
 correlation.matrix.w3 <- cbind(vars.w3, correlations.w3)
-correlation.matrix.w3
+#correlation.matrix.w3
 
 #png(height = 1200, width = 800, file = "fig2.png")
 #par(mfrow = c(3, 1))
@@ -293,7 +292,7 @@ eg_correlations <- c(
 )
 eg_correlations <- round(eg_correlations, 3)
 eg_correlation.matrix <- cbind(eg_vars, eg_correlations)
-eg_correlation.matrix
+#eg_correlation.matrix
 #png(height = 600, width = 800, file = "fig3.png")
 dotchart(rev(eg_correlations), labels = rev(eg_vars), main = "Moral Factor Between-Wave Correlations (Smith et al Data)", pch = 19, cex = 1.25)
 #dev.off()
@@ -495,11 +494,7 @@ rm(dat)
 
 ```
 
-
-
-
-
-
-
 ### Bibliography
+
+@main_paper @side_paper_1 @side_paper_2 @side_paper_3 @side_paper_4
 
