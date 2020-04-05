@@ -1,0 +1,505 @@
+---
+title: "Milestone 6"
+author: "Miroslav Bergam"
+date: "4/04/2020"
+output: bookdown::pdf_document2
+bibliography: bibliography.bib
+link_citations: true
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+
+#### Load libraries
+library(rio)
+library(car)
+library(dplyr)
+library(Hmisc)
+library(psych)
+library(lavaan)
+library(lattice)
+library(corrplot)
+library(broom)
+library(gridExtra)
+library(tidyverse)
+library(randomForest)
+
+#### Load custom function for mode
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+```
+
+
+Milestone 6
+
+@main_paper @side_paper_1 @side_paper_2 @side_paper_3 @side_paper_4
+
+^[[All analysis for this paper is availible at https://github.com/mirobergam/milestone-5](https://github.com/mirobergam/milestone-5)]
+
+### Figure 1
+
+```{r}
+
+### Load data; set the working directory to the folder that contains the downloaded files
+dat <- rio::import("mturk_w2.csv")
+
+### Make Figure 1
+mfq.correlations <- c(cor(dat$Q197[!is.na(dat$Q197) & !is.na(dat$Wave2_Q197)], dat$Wave2_Q197[!is.na(dat$Q197) & !is.na(dat$Wave2_Q197)]),
+                      cor(dat$Q53_21[!is.na(dat$Wave2_Q53_21)], dat$Wave2_Q53_21[!is.na(dat$Q53_21) & !is.na(dat$Wave2_Q53_21)]),
+                      cor(dat$Q53_23[!is.na(dat$Wave2_Q53_23)], dat$Wave2_Q53_23[!is.na(dat$Q53_23) & !is.na(dat$Wave2_Q53_23)]),
+                      cor(dat$Q53_24[!is.na(dat$Wave2_Q53_24)], dat$Wave2_Q53_24[!is.na(dat$Q53_24) & !is.na(dat$Wave2_Q53_24)]),
+                      cor(dat$Q53_30[!is.na(dat$Wave2_Q53_30)], dat$Wave2_Q53_30[!is.na(dat$Q53_30) & !is.na(dat$Wave2_Q53_30)]),
+                      cor(dat$Q53_31[!is.na(dat$Wave2_Q53_31)], dat$Wave2_Q53_31[!is.na(dat$Q53_31) & !is.na(dat$Wave2_Q53_31)]),
+                      cor(dat$Q53_33[!is.na(dat$Wave2_Q53_33)], dat$Wave2_Q53_33[!is.na(dat$Q53_33) & !is.na(dat$Wave2_Q53_33)]),
+                      cor(dat$Q53_20[!is.na(dat$Wave2_Q53_20)], dat$Wave2_Q53_20[!is.na(dat$Q53_20) & !is.na(dat$Wave2_Q53_20)]),
+                      cor(dat$Q53_22[!is.na(dat$Wave2_Q53_22)], dat$Wave2_Q53_22[!is.na(dat$Q53_22) & !is.na(dat$Wave2_Q53_22)]),
+                      cor(dat$Q53_26[!is.na(dat$Wave2_Q53_26)], dat$Wave2_Q53_26[!is.na(dat$Q53_26) & !is.na(dat$Wave2_Q53_26)]),
+                      cor(dat$Q53_27[!is.na(dat$Wave2_Q53_27)], dat$Wave2_Q53_27[!is.na(dat$Q53_27) & !is.na(dat$Wave2_Q53_27)]),
+                      cor(dat$Q53_28[!is.na(dat$Wave2_Q53_28)], dat$Wave2_Q53_28[!is.na(dat$Q53_28) & !is.na(dat$Wave2_Q53_28)]),
+                      cor(dat$Q53_29[!is.na(dat$Wave2_Q53_29)], dat$Wave2_Q53_29[!is.na(dat$Q53_29) & !is.na(dat$Wave2_Q53_29)]),
+                      cor(dat$Q53_32[!is.na(dat$Wave2_Q53_32)], dat$Wave2_Q53_32[!is.na(dat$Q53_32) & !is.na(dat$Wave2_Q53_32)]),
+                      cor(dat$Q53_34[!is.na(dat$Wave2_Q53_34)], dat$Wave2_Q53_34[!is.na(dat$Q53_34) & !is.na(dat$Wave2_Q53_34)]),
+                      cor(dat$Q53_35[!is.na(dat$Wave2_Q53_35)], dat$Wave2_Q53_35[!is.na(dat$Q53_35) & !is.na(dat$Wave2_Q53_35)]),
+                      cor(dat$Q54_36[!is.na(dat$Wave2_Q54_36)], dat$Wave2_Q54_36[!is.na(dat$Q54_36) & !is.na(dat$Wave2_Q54_36)]),
+                      cor(dat$Q54_37[!is.na(dat$Wave2_Q54_37)], dat$Wave2_Q54_37[!is.na(dat$Q54_37) & !is.na(dat$Wave2_Q54_37)]),
+                      cor(dat$Q54_38[!is.na(dat$Wave2_Q54_38)], dat$Wave2_Q54_38[!is.na(dat$Q54_38) & !is.na(dat$Wave2_Q54_38)]),
+                      cor(dat$Q54_39[!is.na(dat$Wave2_Q54_39)], dat$Wave2_Q54_39[!is.na(dat$Q54_39) & !is.na(dat$Wave2_Q54_39)]),
+                      cor(dat$Q54_40[!is.na(dat$Wave2_Q54_40)], dat$Wave2_Q54_40[!is.na(dat$Q54_40) & !is.na(dat$Wave2_Q54_40)]),
+                      cor(dat$Q54_42[!is.na(dat$Wave2_Q54_42)], dat$Wave2_Q54_42[!is.na(dat$Q54_42) & !is.na(dat$Wave2_Q54_42)]),
+                      cor(dat$Q54_43[!is.na(dat$Wave2_Q54_43)], dat$Wave2_Q54_43[!is.na(dat$Q54_43) & !is.na(dat$Wave2_Q54_43)]),
+                      cor(dat$Q54_44[!is.na(dat$Wave2_Q54_44)], dat$Wave2_Q54_44[!is.na(dat$Q54_44) & !is.na(dat$Wave2_Q54_44)]),
+                      cor(dat$Q54_45[!is.na(dat$Wave2_Q54_45)], dat$Wave2_Q54_45[!is.na(dat$Q54_45) & !is.na(dat$Wave2_Q54_45)]),
+                      cor(dat$Q54_46[!is.na(dat$Wave2_Q54_46)], dat$Wave2_Q54_46[!is.na(dat$Q54_46) & !is.na(dat$Wave2_Q54_46)]),
+                      cor(dat$Q54_47[!is.na(dat$Wave2_Q54_47)], dat$Wave2_Q54_47[!is.na(dat$Q54_47) & !is.na(dat$Wave2_Q54_47)]),
+                      cor(dat$Q54_48[!is.na(dat$Wave2_Q54_48)], dat$Wave2_Q54_48[!is.na(dat$Q54_48) & !is.na(dat$Wave2_Q54_48)]),
+                      cor(dat$Q54_49[!is.na(dat$Wave2_Q54_49)], dat$Wave2_Q54_49[!is.na(dat$Q54_49) & !is.na(dat$Wave2_Q54_49)]),
+                      cor(dat$Q54_50[!is.na(dat$Wave2_Q54_50)], dat$Wave2_Q54_50[!is.na(dat$Q54_50) & !is.na(dat$Wave2_Q54_50)]),
+                      cor(dat$Q54_51[!is.na(dat$Wave2_Q54_51)], dat$Wave2_Q54_51[!is.na(dat$Q54_51) & !is.na(dat$Wave2_Q54_51)]))
+
+mfq.correlations.labels <- c(
+  "Political Ideology",
+  "Whether or not some people were treated differently than others.",
+  "Whether or not someone showed a lack of respect for authority.",
+  "Whether or not someone violated standards of purity and decency.",
+  "Whether or not someone did something disgusting.",
+  "Whether or not someone was cruel.",
+  "Whether or not someone showed a lack of loyalty.",
+  "Whether or not someone suffered emotionally.",
+  "Whether or not someone’s action showed love for his or her country.",
+  "Whether or not someone cared for someone weak or vulnerable.",
+  "Whether or not someone acted unfairly.",
+  "Whether or not someone did something to betray his or her group.",
+  "Whether or not someone conformed to the traditions of society.",
+  "Whether or not someone was denied his or her rights.",
+  "Whether or not an action caused chaos or disorder.",
+  "Whether or not someone acted in a way that God would approve of.",
+  "Compassion for those who are suffering is the most crucial virtue.",
+  "When the government makes laws, the number one principle should be ensuring that everyone is treated fairly.",
+  "I am proud of my country’s history.",
+  "Respect for authority is something all children need to learn.",
+  "People should not do things that are disgusting, even if no one is harmed.",
+  "One of the worst things a person could do is hurt a defenseless animal.",
+  "Justice is the most important requirement for a society.",
+  "People should be loyal to their family members, even when they have done something wrong.",
+  "Men and women each have different roles to play in society.",
+  "I would call some acts wrong on the grounds that they are unnatural.",
+  "It can never be right to kill a human being.",
+  "I think it’s morally wrong that rich children inherit a lot of money while poor children inherit nothing.",
+  "It is more important to be a team player than to express oneself.",
+  "If I were a soldier and disagreed with my commanding officer’s orders, I would obey anyway because that is my duty.",
+  "Chastity is an important and valuable virtue."
+)
+
+mfq.colors.labels <- c("#444444", rep("#000000", 6), rep("#444444", 24))
+
+#tiff(height = 625, width = 1000, file = "fig1.tiff", pointsize = 15)
+
+dotchart(rev(mfq.correlations), labels = rev(mfq.correlations.labels), 
+         main = "Moral Factor Between-Wave Correlations (MTurk Data)", 
+         gcolor = rev(mfq.colors.labels), color = rev(mfq.colors.labels), pch = 19, cex = 0.6)
+
+#dev.off()
+rm(dat)
+
+```
+
+### Figure 2
+
+```{r}
+
+dat <- rio::import("mturk_w3.csv")
+
+### Make Figure 2
+dat.cor <- dat %>% 
+  select(
+    ideology1,
+    ideology2,
+    ideology3,
+    binding1,
+    binding2,
+    binding3,
+    auth1,
+    auth2,
+    auth3,
+    loyalty1,
+    loyalty2,
+    loyalty3,
+    purity1,
+    purity2,
+    purity3,
+    individualizing1,
+    individualizing2,
+    individualizing3,
+    fair1,
+    fair2,
+    fair3,
+    harm1,
+    harm2,
+    harm3
+  )
+
+var <- c(
+  "Ideology (W1)", "Ideology (W2)", "Ideology (W3)",
+  "Binding (W1)", "Binding (W2)", "Binding (W3)",
+  "Authority (W1)", "Authority (W2)", "Authority (W3)",
+  "Loyalty (W1)", "Loyalty (W2)", "Loyalty (W3)",
+  "Purity (W1)", "Purity (W2)", "Purity (W3)",
+  "Individualizing (W1)", "Individualizing (W2)", "Individualizing (W3)",
+  "Fairness (W1)", "Fairness (W2)", "Fairness (W3)",
+  "Harm (W1)", "Harm (W2)", "Harm (W3)"
+)
+colnames(dat.cor) <- var
+
+vars <- c("Ideology (W1/W2)", "Binding (W1/W2)", "Authority (W1/W2)", "Loyalty (W1/W2)", "Purity (W1/W2)",
+          "Fairness (W1/W2)", "Harm (W1/W2)", "Individualizing (W1/W2)" )
+correlations <- c(
+  cor(dat.cor$`Ideology (W1)`, dat.cor$`Ideology (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Binding (W1)`, dat.cor$`Binding (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Authority (W1)`, dat.cor$`Authority (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Loyalty (W1)`, dat.cor$`Loyalty (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Purity (W1)`, dat.cor$`Purity (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Individualizing (W1)`, dat.cor$`Individualizing (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Fairness (W1)`, dat.cor$`Fairness (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Harm (W1)`, dat.cor$`Harm (W2)`, method = c("pearson"), use = "pairwise.complete.obs")
+)
+correlations <- round(correlations, 3)
+correlation.matrix <- cbind(vars, correlations)
+correlation.matrix
+
+vars.2 <- c("Ideology (W1/W3)", "Binding (W1/W3)", "Authority (W1/W3)", "Loyalty (W1/W3)", "Purity (W1/W3)",
+            "Fairness (W1/W3)", "Harm (W1/W3)", "Individualizing (W1/W3)" )
+correlations.2 <- c(
+  cor(dat.cor$`Ideology (W1)`, dat.cor$`Ideology (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Binding (W1)`, dat.cor$`Binding (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Authority (W1)`, dat.cor$`Authority (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Loyalty (W1)`, dat.cor$`Loyalty (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Purity (W1)`, dat.cor$`Purity (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Individualizing (W1)`, dat.cor$`Individualizing (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Fairness (W1)`, dat.cor$`Fairness (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Harm (W1)`, dat.cor$`Harm (W3)`, method = c("pearson"), use = "pairwise.complete.obs")
+)
+correlations.2 <- round(correlations, 3)
+correlation.matrix.2 <- cbind(vars, correlations.2)
+correlation.matrix.2
+
+vars.w3 <- c("Ideology (W2/W3)", "Binding (W2/W3)", "Authority (W2/W3)", "Loyalty (W2/W3)", "Purity (W2/W3)",
+             "Fairness (W2/W3)", "Harm (W2/W3)", "Individualizing (W2/W3)" )
+correlations.w3 <- c(
+  cor(dat.cor$`Ideology (W2)`, dat.cor$`Ideology (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Binding (W2)`, dat.cor$`Binding (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Authority (W2)`, dat.cor$`Authority (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Loyalty (W2)`, dat.cor$`Loyalty (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Purity (W2)`, dat.cor$`Purity (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Fairness (W2)`, dat.cor$`Fairness (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Harm (W2)`, dat.cor$`Harm (W3)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Individualizing (W2)`, dat.cor$`Individualizing (W3)`, method = c("pearson"), use = "pairwise.complete.obs")
+)
+correlations.w3 <- round(correlations.w3, 3)
+correlation.matrix.w3 <- cbind(vars.w3, correlations.w3)
+correlation.matrix.w3
+
+#png(height = 1200, width = 800, file = "fig2.png")
+#par(mfrow = c(3, 1))
+dotchart(rev(correlations), labels = rev(vars), main = "", pch = 19, cex = 1.25)
+dotchart(rev(correlations.2), labels = rev(vars.2), main = "", pch = 19, cex = 1.25)
+dotchart(rev(correlations.w3), labels = rev(vars.w3), main = "", pch = 19, cex = 1.25)
+#dev.off()
+rm(dat)
+
+```
+
+### Figure 3
+
+```{r}
+
+### Load data; set the working directory to the folder that contains the downloaded files
+dat <- rio::import("smithetal.csv")
+
+### Make Figure 3
+dat.cor <- dat %>% 
+  select(
+    def_w1,
+    def_w2,
+    econ_w1,
+    econ_w2,
+    soc_w1,
+    soc_w2,
+    EG1_BINDING_SHORT,
+    EG2_BINDING_SHORT,
+    authority1,
+    authority2,
+    loyalty1,
+    loyalty2,
+    purity1,
+    purity2,
+    EG1_IND_SHORT,
+    EG2_IND_SHORT,
+    fairness1,
+    fairness2,
+    harm1,
+    harm2
+  )
+
+var_eg <- c(
+  "Defense Ideology (W1)", "Defense Ideology (W2)",
+  "Economic Ideology (W1)", "Economic Ideology (W2)",
+  "Social Ideology (W1)", "Social Ideology (W2)",
+  "Binding (W1)", "Binding (W2)",
+  "Authority (W1)", "Authority (W2)",
+  "Loyalty (W1)", "Loyalty (W2)",
+  "Purity (W1)", "Purity (W2)",
+  "Individualizing (W1)", "Individualizing (W2)",
+  "Fairness (W1)", "Fairness (W2)",
+  "Harm (W1)", "Harm (W2)"
+)
+colnames(dat.cor) <- var_eg
+
+eg_vars <- c("Defense Ideology", "Economic Ideology", "Social Ideology", "Binding", "Authority", "Loyalty", "Purity", "Individualizing", "Fairness", "Harm")
+eg_correlations <- c(
+  cor(dat.cor$`Defense Ideology (W1)`, dat.cor$`Defense Ideology (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Economic Ideology (W1)`, dat.cor$`Economic Ideology (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Social Ideology (W1)`, dat.cor$`Social Ideology (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Binding (W1)`, dat.cor$`Binding (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Authority (W1)`, dat.cor$`Authority (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Loyalty (W1)`, dat.cor$`Loyalty (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Purity (W1)`, dat.cor$`Purity (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Individualizing (W1)`, dat.cor$`Individualizing (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Fairness (W1)`, dat.cor$`Fairness (W2)`, method = c("pearson"), use = "pairwise.complete.obs"),
+  cor(dat.cor$`Harm (W1)`, dat.cor$`Harm (W2)`, method = c("pearson"), use = "pairwise.complete.obs")
+)
+eg_correlations <- round(eg_correlations, 3)
+eg_correlation.matrix <- cbind(eg_vars, eg_correlations)
+eg_correlation.matrix
+#png(height = 600, width = 800, file = "fig3.png")
+dotchart(rev(eg_correlations), labels = rev(eg_vars), main = "Moral Factor Between-Wave Correlations (Smith et al Data)", pch = 19, cex = 1.25)
+#dev.off()
+
+rm(dat)
+
+```
+
+### Figure 4
+
+```{r}
+
+#### Set seed
+set.seed(06011986)
+
+### Load data; set the working directory to the folder that contains the downloaded files
+dat <- rio::import("mturk_w3.csv")
+
+### Make Figure 4
+#png(height = 600, width = 800, file = "fig4.png")
+par(mfrow = c(3, 3))
+temp <- randomForest(ideology3 ~ ideology1 + ideology2 + binding1 + binding2 + binding3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Political Ideology", 
+           labels = rev(c("Ideology (W1)", "Ideology (W2)", "Binding (W3)", "Binding (W2)", "Binding (W1)")), pch = 19)
+temp <- randomForest(ideology3 ~ ideology1 + ideology2 + auth1 + auth2 + auth3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Political Ideology", 
+           labels = rev(c("Ideology (W1)", "Ideology (W2)", "Authority (W3)", "Authority (W2)", "Authority (W1)")), pch = 19)
+temp <- randomForest(ideology3 ~ ideology1 + ideology2 + loyalty1 + loyalty2 + loyalty3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Political Ideology", 
+           labels = rev(c("Ideology (W1)", "Ideology (W2)", "Loyalty (W3)", "Loyalty (W2)", "Loyalty (W1)")), pch = 19)
+temp <- randomForest(ideology3 ~ ideology1 + ideology2 + purity1 + purity2 + purity3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Political Ideology", 
+           labels = rev(c("Ideology (W2)", "Ideology (W1)", "Purity (W2)", "Purity (W3)", "Purity (W1)")), pch = 19)
+temp <- randomForest(ideology3 ~ ideology1 + ideology2 + individualizing1 + individualizing2 + individualizing3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Political Ideology", 
+           labels = rev(c("Ideology (W1)", "Ideology (W2)", "Individualizing (W2)", "Individualizing (W3)", "Individualizing (W1)")), pch = 19)
+temp <- randomForest(ideology3 ~ ideology1 + ideology2 + fair1 + fair2 + fair3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Political Ideology", 
+           labels = rev(c("Ideology (W1)", "Ideology (W2)", "Fairness (W3)", "Fairness (W2)", "Fairness (W1)")), pch = 19)
+temp <- randomForest(ideology3 ~ ideology1 + ideology2 + harm1 + harm2 + harm3, data = dat, na.action = na.omit, importance = TRUE, ntree =250)
+varImpPlot(temp, type = 1, main = "Political Ideology", 
+           labels = rev(c("Ideology (W1)", "Ideology (W2)", "Harm (W1)", "Harm (W2)", "Harm (W3)")), pch = 19)
+#dev.off()
+
+rm(dat)
+
+```
+
+### Figure 5
+
+```{r}
+
+#### Set seed
+set.seed(06011986)
+
+### Load data; set the working directory to the folder that contains the downloaded files
+dat <- rio::import("mturk_w3.csv")
+
+### Make Figure 5
+par(mfrow = c(3, 3))
+temp <- randomForest(binding3 ~ binding1 + binding2 + ideology1 + ideology2 + ideology3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Binding", 
+           labels = rev(c("Binding (W2)", "Binding (W1)", "Political Ideology (W2)", "Political Ideology (W3)", "Political Ideology (W1)")), pch = 19)
+temp <- randomForest(auth3 ~ auth1 + auth2 + ideology1 + ideology2 + ideology3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Authority", 
+           labels = rev(c("Authority (W2)", "Authority (W1)", "Political Ideology (W2)", "Political Ideology (W3)", "Political Ideology (W1)")), pch = 19)
+temp <- randomForest(loyalty3 ~ loyalty1 + loyalty2 + ideology1 + ideology2 + ideology3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Loyalty", 
+           labels = rev(c("Loyalty (W2)", "Loyalty (W1)", "Political Ideology (W3)", "Political Ideology (W2)", "Political Ideology (W1)")), pch = 19)
+temp <- randomForest(purity3 ~ purity1 + purity2 + ideology1 + ideology2 + ideology3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Purity", 
+           labels = rev(c("Purity (W2)", "Purity (W1)", "Political Ideology (W2)", "Political Ideology (W1)", "Political Ideology (W3)")), pch = 19)
+temp <- randomForest(individualizing3 ~ individualizing1 + individualizing2 + ideology1 + ideology2 + ideology3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Individualizing", 
+           labels = rev(c("Individualizing (W2)", "Individualizing (W1)", "Political Ideology (W3)", "Political Ideology (W2)", "Political Ideology (W1)")), pch = 19)
+temp <- randomForest(fair3 ~ fair1 + fair2 + ideology1 + ideology2 + ideology3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Fairness", 
+           labels = rev(c("Fairness (W2)", "Fairness (W1)", "Political Ideology (W3)", "Political Ideology (W2)", "Political Ideology (W1)")), pch = 19)
+temp <- randomForest(harm3 ~ harm1 + harm2 + ideology1 + ideology2 + ideology3, data = dat, na.action = na.omit, importance = TRUE, ntree = 250)
+varImpPlot(temp, type = 1, main = "Harm", 
+           labels = rev(c("Harm (W2)", "Harm (W1)", "Political Ideology (W2)", "Political Ideology (W1)", "Political Ideology (W3)")), pch = 19)
+#dev.off()
+
+rm(dat)
+
+```
+
+### Figure 6
+
+```{r}
+
+#### Set seed
+set.seed(06011986)
+
+### Load data; set the working directory to the folder that contains the downloaded files
+dat <- rio::import("smithetal.csv")
+
+### Make Figure 7
+#png(height = 900, width = 800, file = "fig6.png")
+par(mfrow = c(3, 2))
+temp <- randomForest(def_w2 ~ EG2_BINDING_SHORT + def_w1 + EG1_BINDING_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Defense Ideology", 
+           labels = rev(c("Defense Ideology (W1)", "Binding (W1)", "Binding (W2)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(def_w2 ~ EG2_IND_SHORT + def_w1 + EG1_IND_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Defense Ideology", 
+           labels = rev(c("Defense Ideology (W1)", "Individualizing (W2)", "Individualizing (W1)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(econ_w2 ~ EG2_BINDING_SHORT + econ_w1 + EG1_BINDING_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Economic Ideology", 
+           labels = rev(c("Economic Ideology (W1)", "Binding (W1)", "Binding (W2)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(econ_w2 ~ EG2_IND_SHORT + econ_w1 + EG1_IND_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Economic Ideology", 
+           labels = rev(c("Economic Ideology (W1)", "Individualizing (W1)", "Individualizing (W2)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(soc_w2 ~ EG2_BINDING_SHORT + soc_w1 + EG1_BINDING_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Social Ideology", 
+           labels = rev(c("Social Ideology (W1)", "Binding (W2)", "Binding (W1)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(soc_w2 ~ EG2_IND_SHORT + soc_w1 + EG1_IND_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Social Ideology", 
+           labels = rev(c("Social Ideology (W1)", "Individualizing (W2)", "Individualizing (W1)")), pch = 19, lcolor = "#8a114e")
+#dev.off()
+
+rm(dat)
+
+```
+
+### Figure 7 
+
+```{r}
+
+#### Set seed
+set.seed(06011986)
+
+### Load data; set the working directory to the folder that contains the downloaded files
+dat <- rio::import("smithetal.csv")
+
+### Make Figure 7
+#png(height = 500, width = 900, file = "fig7.png")
+par(mfrow = c(2, 3))
+temp <- randomForest(EG2_BINDING_SHORT ~ def_w2 + def_w1 + EG1_BINDING_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Binding", 
+           labels = rev(c("Binding (W1)", "Defense Ideology (W2)", "Defense Ideology (W1)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(EG2_BINDING_SHORT ~ econ_w2 + econ_w1 + EG1_BINDING_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Binding", 
+           labels = rev(c("Binding (W1)", "Economic Ideology (W2)", "Economic Ideology (W1)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(EG2_BINDING_SHORT ~ soc_w2 + soc_w1 + EG1_BINDING_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Binding", 
+           labels = rev(c("Binding (W1)", "Social Ideology (W1)", "Social Ideology (W2)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(EG2_IND_SHORT ~ def_w2 + def_w1 + EG1_IND_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Individualizing", 
+           labels = rev(c("Individualizing (W1)", "Defense Ideology (W1)", "Defense Ideology (W2)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(EG2_IND_SHORT ~ econ_w2 + econ_w1 + EG1_IND_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Individualizing", 
+           labels = rev(c("Individualizing (W1)", "Economic Ideology (W2)", "Economic Ideology (W1)")), pch = 19, lcolor = "#8a114e")
+temp <- randomForest(EG2_IND_SHORT ~ soc_w2 + soc_w1 + EG1_IND_SHORT, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Individualizing", 
+           labels = rev(c("Individualizing (W1)", "Social Ideology (W2)", "Social Ideology (W1)")), pch = 19, lcolor = "#8a114e")
+#dev.off()
+
+rm(dat)
+
+```
+
+### Figure 8
+
+```{r}
+
+#### Set seed
+set.seed(06011986)
+
+### Load data; set the working directory to the folder that contains the downloaded files
+dat <- rio::import("anes.csv")
+
+### Make Figure 8
+#png(height = 600, width = 700, file = "fig8.png")
+par(mfrow = c(3, 3))
+temp <- randomForest(ideow11 ~ binding + ideow6, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Ideology (W11)", 
+           labels = rev(c("Ideology (W6)", "Binding (W7)")), pch = 19, lcolor = "#FFE519")
+temp <- randomForest(ideow11 ~ authority + ideow6, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Ideology (W11)", 
+           labels = rev(c("Ideology (W6)", "Authority (W7)")), pch = 19, lcolor = "#FFE519")
+temp <- randomForest(ideow11 ~ ingroup + ideow6, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Ideology (W11)", 
+           labels = rev(c("Ideology (W6)", "Loyalty (W7)")), pch = 19, lcolor = "#FFE519")
+temp <- randomForest(ideow11 ~ purity + ideow6, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Ideology (W11)", 
+           labels = rev(c("Ideology (W6)", "Purity (W7)")), pch = 19, lcolor = "#FFE519")
+temp <- randomForest(ideow11 ~ individualizing + ideow6, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Ideology (W11)", 
+           labels = rev(c("Ideology (W6)", "Individualizing (W7)")), pch = 19, lcolor = "#FFE519")
+temp <- randomForest(ideow11 ~ fairness + ideow6, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Ideology (W11)", 
+           labels = rev(c("Ideology (W6)", "Fairness (W7)")), pch = 19, lcolor = "#FFE519")
+temp <- randomForest(ideow11 ~ harm + ideow6, data = dat, na.action = na.omit, importance=TRUE, ntree=250)
+varImpPlot(temp, type = 1, main = "Ideology (W11)", 
+           labels = rev(c("Ideology (W6)", "Harm (W7)")), pch = 19, lcolor = "#FFE519")
+#dev.off()
+
+rm(dat)
+
+```
+
+
+
+
+
+
+
+### Bibliography
+
